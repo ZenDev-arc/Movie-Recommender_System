@@ -1,6 +1,8 @@
 name: Automated System Sync
 
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '0 3 * * 1,5' # Monday and Friday at 3:00 AM UTC
   workflow_dispatch: # Allows manual trigger from UI
