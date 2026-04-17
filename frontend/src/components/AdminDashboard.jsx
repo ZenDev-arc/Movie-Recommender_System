@@ -3,6 +3,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Database, RefreshCw, CheckCircle2, AlertCircle, BarChart3, Clock, Globe, Zap } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
+
 const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
     const [syncing, setSyncing] = useState(false);
@@ -11,7 +13,7 @@ const AdminDashboard = () => {
 
     const fetchStats = async () => {
         try {
-            const res = await axios.get('http://localhost:8001/admin/stats');
+            const res = await axios.get(`${API_BASE_URL}/admin/stats`);
             setStats(res.data);
             setError(null);
         } catch (err) {
@@ -30,7 +32,7 @@ const AdminDashboard = () => {
         setSyncing(true);
         setSuccessMsg("");
         try {
-            await axios.post('http://localhost:8001/admin/sync');
+            await axios.post(`${API_BASE_URL}/admin/sync`);
             setSuccessMsg("System synchronization initiated successfully!");
             fetchStats();
         } catch (err) {

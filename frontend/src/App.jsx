@@ -28,6 +28,8 @@ const genreGradients = {
   Western: "from-orange-950 to-[#0a0a0f]",
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
+
 function App() {
   const [isAdmin, setIsAdmin] = useState(window.location.pathname === '/system-portal');
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -49,11 +51,11 @@ function App() {
     try {
       const r = currentRegion === "Global" ? "All" : currentRegion;
       const [trendRes, topRes, gemRes, moodRes, genRes] = await Promise.all([
-        axios.get(`http://localhost:8001/trending?region=${r}`),
-        axios.get(`http://localhost:8001/top-rated?region=${r}`),
-        axios.get(`http://localhost:8001/hidden-gems?region=${r}`),
-        axios.get('http://localhost:8001/moods'),
-        axios.get('http://localhost:8001/genres')
+        axios.get(`${API_BASE_URL}/trending?region=${r}`),
+        axios.get(`${API_BASE_URL}/top-rated?region=${r}`),
+        axios.get(`${API_BASE_URL}/hidden-gems?region=${r}`),
+        axios.get(`${API_BASE_URL}/moods`),
+        axios.get(`${API_BASE_URL}/genres`)
       ]);
       setTrending(trendRes.data);
       setTopRated(topRes.data);
@@ -89,10 +91,10 @@ function App() {
   const fetchRecommendations = async (title) => {
     setLoading(true);
     try {
-      const movieResponse = await axios.get(`http://localhost:8001/movie?title=${encodeURIComponent(title)}`);
+      const movieResponse = await axios.get(`${API_BASE_URL}/movie?title=${encodeURIComponent(title)}`);
       setSelectedMovie(movieResponse.data);
 
-      const recResponse = await axios.get(`http://localhost:8001/recommend?title=${encodeURIComponent(title)}`);
+      const recResponse = await axios.get(`${API_BASE_URL}/recommend?title=${encodeURIComponent(title)}`);
       setRecommendations(recResponse.data);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
@@ -107,7 +109,7 @@ function App() {
     setActiveMood(vibe);
     try {
       const r = region === "Global" ? "All" : region;
-      const res = await axios.get(`http://localhost:8001/mood?vibe=${vibe}&region=${r}`);
+      const res = await axios.get(`${API_BASE_URL}/mood?vibe=${vibe}&region=${r}`);
       setTrending(res.data);
     } catch (error) {
       console.error("Error fetching mood:", error);
@@ -120,7 +122,7 @@ function App() {
     setLoading(true);
     try {
       const r = region === "Global" ? "All" : region;
-      const res = await axios.get(`http://localhost:8001/random?region=${r}`);
+      const res = await axios.get(`${API_BASE_URL}/random?region=${r}`);
       fetchRecommendations(res.data.title);
     } catch (error) {
       console.error("Error in roulette:", error);
@@ -133,7 +135,7 @@ function App() {
     if (!mashupMovies[0] || !mashupMovies[1]) return;
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:8001/mashup?t1=${mashupMovies[0]}&t2=${mashupMovies[1]}`);
+      const res = await axios.get(`${API_BASE_URL}/mashup?t1=${mashupMovies[0]}&t2=${mashupMovies[1]}`);
       setRecommendations(res.data);
       setSelectedMovie({
         title: `Mashup: ${mashupMovies[0]} & ${mashupMovies[1]}`,
