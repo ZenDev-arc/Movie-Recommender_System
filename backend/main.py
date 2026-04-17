@@ -4,13 +4,18 @@ import pandas as pd
 import pickle
 import os
 import random
-import torch
-from sentence_transformers import SentenceTransformer, util
+from contextlib import asynccontextmanager
 from apscheduler.schedulers.background import BackgroundScheduler
 from database import SessionLocal, Movie, SyncHistory
 from sync_manager import SyncManager
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load data on startup without blocking the thread
+    load_data()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,8 +30,17 @@ movies = None
 similarity = None
 ai_model = None
 
+def get_ai_model():
+    """Lazy loader for SBERT model."""
+    global ai_model
+    if ai_model is None:
+        print("Loading AI Model (SBERT) for the first time...")
+        from sentence_transformers import SentenceTransformer
+        ai_model = SentenceTransformer('all-MiniLM-L6-v2')
+    return ai_model
+
 def load_data():
-    global movies, similarity, ai_model
+    global movies, similarity
     MOVIES_PKL = "artifacts/movies.pkl"
     SIMILARITY_PKL = "artifacts/similarity.pkl"
     
@@ -36,13 +50,9 @@ def load_data():
         similarity = pickle.load(open(SIMILARITY_PKL, 'rb'))
         print("Data loaded/refreshed from artifacts.")
     else:
-        print("Missing model artifacts. Run sync/preprocess first.")
-    
-    if not ai_model:
-        print("Loading AI Model (SBERT)...")
-        ai_model = SentenceTransformer('all-MiniLM-L6-v2')
+        print("Missing model artifacts. System will load them after sync.")
 
-load_data()
+# Data is now loaded via lifespan or on-demand
 
 # Scheduler setup
 def scheduled_sync():
@@ -180,23 +190,19 @@ async def get_movie(title: str):
 async def ai_conceptual_search(q: str, region: str = "All", n: int = 15):
     if not q: return []
     
+    model = get_ai_model()
+    import torch
+    from sentence_transformers import util
+    
     # 1. Encode the user query
     with torch.no_grad():
-        query_embedding = ai_model.encode(q, convert_to_tensor=True)
-    
-    # 2. We need the embeddings of all movies
-    # Since we don't store raw embeddings in memory (to save RAM), 
-    # we use the similarity matrix or we can rebuild embeddings for the current session.
-    # Actually, for "AI Search", we SHOULD store embeddings. 
-    # But for now, we'll use a trick: 
-    # If the search query matches a movie title exactly, we use that movie's similarity.
-    # BETTER: We'll calculate the similarity against all 'tags' in real-time (it's fast for 7k).
+        query_embedding = model.encode(q, convert_to_tensor=True)
     
     data = movies if region == "All" else movies[movies['region'] == region]
     texts = data['tags'].tolist()
     
     with torch.no_grad():
-        doc_embeddings = ai_model.encode(texts, convert_to_tensor=True)
+        doc_embeddings = model.encode(texts, convert_to_tensor=True)
         scores = util.cos_sim(query_embedding, doc_embeddings)[0]
     
     # Get top N

@@ -1,6 +1,4 @@
 import pandas as pd
-from sentence_transformers import SentenceTransformer, util
-import torch
 import pickle
 import os
 import json
@@ -8,6 +6,9 @@ from database import SessionLocal, Movie
 
 def rebuild_similarity_matrix():
     """Fetch all movies from DB, compute similarity, and save artifacts."""
+    from sentence_transformers import SentenceTransformer, util
+    import torch
+    
     db = SessionLocal()
     movies_objs = db.query(Movie).all()
     db.close()
