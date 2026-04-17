@@ -23,8 +23,8 @@ build/
 # Project Specific
 *.log
 
-# CRITICAL: Ignore large artifacts (These are built in the cloud)
-artifacts/
-*.pkl
+# Allow database and the optimized AI results (Small enough for GitHub)
+!movies.db
+!artifacts/*.pkl
 *.db-journal
 *.sqlite

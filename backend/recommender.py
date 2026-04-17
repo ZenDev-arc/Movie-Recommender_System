@@ -64,7 +64,21 @@ def rebuild_similarity_matrix():
         embeddings = model.encode(df['tags'].tolist(), convert_to_tensor=True, show_progress_bar=True)
     
     # Calculate Similarity using SBERT utility (Optimized)
-    similarity = util.cos_sim(embeddings, embeddings).cpu().numpy()
+    embeddings = embeddings.cpu()  # Move to CPU for similarity calc
+    similarity = util.cos_sim(embeddings, embeddings).numpy()
+
+    # --- STORAGE OPTIMIZATION: SAVE TOP 100 ONLY ---
+    # Saving a 7k x 7k float32 matrix is ~196MB.
+    # Saving top 100 indices/scores for each movie is ~2MB.
+    print("Compressing AI Semantic Matrix...")
+    compressed_sim = {}
+    for i in range(len(df)):
+        # Get top 101 (including itself)
+        top_indices = similarity[i].argsort()[-101:][::-1]
+        compressed_sim[i] = [
+            (int(idx), float(similarity[i][idx])) 
+            for idx in top_indices if idx != i
+        ][:100]
 
     # Save to artifacts
     if not os.path.exists('artifacts'):
@@ -73,8 +87,9 @@ def rebuild_similarity_matrix():
     # Save dictionary for backend loading
     save_df = df.copy()
     pickle.dump(save_df.to_dict(), open('artifacts/movies.pkl', 'wb'))
-    pickle.dump(similarity, open('artifacts/similarity.pkl', 'wb'))
+    pickle.dump(compressed_sim, open('artifacts/similarity.pkl', 'wb'))
     
+    print(f"AI Matrix Compressed: {os.path.getsize('artifacts/similarity.pkl') / 1024 / 1024:.2f} MB")
     print("AI Semantic Matrix Rebuilt Successfully.")
 
 if __name__ == "__main__":

@@ -215,24 +215,20 @@ async def ai_conceptual_search(q: str, region: str = "All", n: int = 15):
 async def recommend(title: str, n: int = 15):
     try:
         idx = movies[movies['title'] == title].index[0]
-    except IndexError:
-        # Case insensitive fallback
-        try:
-            idx = movies[movies['title'].str.lower() == title.lower()].index[0]
-        except:
-            raise HTTPException(status_code=404, detail="Movie not found")
+        # similarity[idx] is now a list of (index, score) tuples
+        distances = similarity[idx]
+        
+        movie_list = []
+        for i, score in distances[:n]:
+            res = movies.iloc[i].drop(columns=['tags']).to_dict()
+            res['match_score'] = float(score)
+            res['dna'] = ["AI Conceptual Match"]
+            movie_list.append(res)
             
-    base_movie = movies.iloc[idx]
-    distances = similarity[idx]
-    movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:n+1]
-    
-    recommendations = []
-    for i in movies_list:
-        rec_movie = movies.iloc[i[0]].drop(columns=['tags']).to_dict()
-        rec_movie['dna'] = get_common_dna(base_movie, movies.iloc[i[0]])
-        recommendations.append(rec_movie)
-    
-    return recommendations
+        return movie_list
+    except Exception as e:
+        print(f"Recommend error: {e}")
+        raise HTTPException(status_code=404, detail="Movie not found")
 
 # Admin Endpoints
 @app.get("/admin/stats")
