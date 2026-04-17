@@ -34,7 +34,7 @@ jobs:
         run: |
           # Since sqlite is local, we just run the sync manager
           # It refers to movies.db in root
-          python backend/sync_manager.py
+          python -m backend.sync_manager
 
       - name: Commit and Push Changes
         run: |
