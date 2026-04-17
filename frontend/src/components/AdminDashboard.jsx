@@ -3,7 +3,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Database, RefreshCw, CheckCircle2, AlertCircle, BarChart3, Clock, Globe, Zap } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
+const raw_api_url = import.meta.env.VITE_API_URL || "http://localhost:8001";
+const API_BASE_URL = raw_api_url.endsWith('/') ? raw_api_url.slice(0, -1) : raw_api_url;
 
 const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
@@ -67,6 +68,26 @@ const AdminDashboard = () => {
                     {syncing ? "Synchronizing..." : "Force System Sync"}
                 </button>
             </header>
+
+            {/* System Status Banner */}
+            <div className="max-w-6xl mx-auto mb-8 p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <Globe className="text-blue-400 w-5 h-5" />
+                    <div>
+                        <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">System Connection</p>
+                        <p className="text-sm font-mono text-gray-200">{API_BASE_URL}</p>
+                    </div>
+                </div>
+                {API_BASE_URL.includes("localhost") ? (
+                    <div className="px-3 py-1 bg-amber-500/20 text-amber-500 rounded-full text-xs font-bold border border-amber-500/30 flex items-center gap-2">
+                        <AlertCircle className="w-3 h-3" /> LOCAL FALLBACK
+                    </div>
+                ) : (
+                    <div className="px-3 py-1 bg-emerald-500/20 text-emerald-500 rounded-full text-xs font-bold border border-emerald-500/30 flex items-center gap-2">
+                        <CheckCircle2 className="w-3 h-3" /> CLOUD LINKED
+                    </div>
+                )}
+            </div>
 
             <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Stats Grid */}

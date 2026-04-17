@@ -28,7 +28,14 @@ const genreGradients = {
   Western: "from-orange-950 to-[#0a0a0f]",
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
+const raw_api_url = import.meta.env.VITE_API_URL || "http://localhost:8001";
+// Safety: Remove trailing slash if user accidentally added one in Vercel settings
+const API_BASE_URL = raw_api_url.endsWith('/') ? raw_api_url.slice(0, -1) : raw_api_url;
+
+console.log("--- System Connection Diagnostic ---");
+console.log("Target API Base:", API_BASE_URL);
+console.log("Environment State:", import.meta.env.MODE);
+console.log("------------------------------------");
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(window.location.pathname === '/system-portal');
