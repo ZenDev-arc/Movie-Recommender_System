@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 import os
 import json
-from database import SessionLocal, Movie
+from backend.database import SessionLocal, Movie
 
 def rebuild_similarity_matrix():
     """Fetch all movies from DB, compute similarity, and save artifacts."""

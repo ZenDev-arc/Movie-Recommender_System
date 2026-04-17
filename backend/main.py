@@ -6,8 +6,8 @@ import os
 import random
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.background import BackgroundScheduler
-from database import SessionLocal, Movie, SyncHistory
-from sync_manager import SyncManager
+from backend.database import SessionLocal, Movie, SyncHistory
+from backend.sync_manager import SyncManager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

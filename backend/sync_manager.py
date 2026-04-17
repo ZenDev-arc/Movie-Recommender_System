@@ -1,9 +1,9 @@
 import json
 import datetime
-from database import SessionLocal, Movie, SyncHistory
-from scrapers.hollywood import scrape_hollywood_new_releases, enrich_movie_details
-from scrapers.bollywood import scrape_bollywood_new_releases, enrich_bollywood_movie
-from recommender import rebuild_similarity_matrix
+from backend.database import SessionLocal, Movie, SyncHistory
+from backend.scrapers.hollywood import scrape_hollywood_new_releases, enrich_movie_details
+from backend.scrapers.bollywood import scrape_bollywood_new_releases, enrich_bollywood_movie
+from backend.recommender import rebuild_similarity_matrix
 
 class SyncManager:
     def __init__(self):
