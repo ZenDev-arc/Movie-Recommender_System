@@ -57,12 +57,12 @@ class SyncManager:
                         keywords=json.dumps([]),
                         cast=json.dumps([]),
                         director=json.dumps([]),
-                        vote_average=7.1,
-                        popularity=15.0,
+                        vote_average=5.0,
+                        popularity=5.0,
                         runtime=140.0,
                         tagline="",
                         release_date=datetime.date.today().strftime("%Y-%m-%d"),
-                        vote_count=100,
+                        vote_count=10,
                         region='Bollywood'
                     )
                     self.db.add(new_movie)

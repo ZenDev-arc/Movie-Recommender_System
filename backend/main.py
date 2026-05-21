@@ -221,17 +221,30 @@ async def ai_conceptual_search(q: str, region: str = "All", n: int = 15):
 async def recommend(title: str, n: int = 15):
     try:
         idx = movies[movies['title'] == title].index[0]
-        # similarity[idx] is now a list of (index, score) tuples
         distances = similarity[idx]
         
-        movie_list = []
-        for i, score in distances[:n]:
+        scored_movies = []
+        for i, semantic_score in distances:
             res = movies.iloc[i].drop(columns=['tags']).to_dict()
-            res['match_score'] = float(score)
-            res['dna'] = ["AI Conceptual Match"]
-            movie_list.append(res)
             
-        return movie_list
+            # Normalize popularity (cap at 100 for normalization)
+            pop = min(res.get('popularity', 0), 100) / 100.0
+            
+            # Normalize vote average (0-10)
+            vote = res.get('vote_average', 0) / 10.0
+            
+            # Weighted score: 70% Semantic, 20% Popularity, 10% Vote Average
+            combined_score = (float(semantic_score) * 0.70) + (pop * 0.20) + (vote * 0.10)
+            
+            res['match_score'] = combined_score
+            res['semantic_score'] = float(semantic_score)
+            res['dna'] = ["AI Conceptual Match"]
+            scored_movies.append(res)
+            
+        # Sort by combined score descending
+        scored_movies.sort(key=lambda x: x['match_score'], reverse=True)
+            
+        return scored_movies[:n]
     except Exception as e:
         print(f"Recommend error: {e}")
         raise HTTPException(status_code=404, detail="Movie not found")

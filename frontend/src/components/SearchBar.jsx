@@ -27,7 +27,8 @@ const SearchBar = ({ onSelect, region = "All" }) => {
       }
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:8001/search?q=${query}&region=${region}`);
+        const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8001").replace(/\/$/, "");
+        const response = await axios.get(`${API_BASE_URL}/search?q=${query}&region=${region}`);
         setSuggestions(response.data);
         setShowDropdown(true);
       } catch (error) {

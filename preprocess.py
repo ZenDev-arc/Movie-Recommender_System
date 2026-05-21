@@ -69,7 +69,7 @@ def load_bollywood():
     bolly = pd.DataFrame()
     bolly['movie_id'] = df['movie_id']
     bolly['title'] = df['movie_name']
-    bolly['overview_text'] = df['overview'].fillna("")
+    bolly['overview_text'] = df['overview'].fillna("No overview available.")
     # Parse comma-separated strings
     bolly['genres'] = df['genre'].fillna("").apply(lambda x: [i.strip() for i in x.split(',')] if x else [])
     bolly['keywords'] = [[] for _ in range(len(df))] # No keywords in this dataset
@@ -77,12 +77,12 @@ def load_bollywood():
     bolly['director'] = df['director'].fillna("").apply(lambda x: [x] if x else [])
     
     # Default values for Bollywood missing metrics
-    bolly['vote_average'] = 7.1
-    bolly['popularity'] = 15.0
+    bolly['vote_average'] = 5.0
+    bolly['popularity'] = 5.0
     bolly['runtime'] = 140.0 # Standard Bollywood length
     bolly['tagline'] = ""
     bolly['release_date'] = df['year'].astype(str) + "-01-01"
-    bolly['vote_count'] = 150
+    bolly['vote_count'] = 10
     bolly['region'] = 'Bollywood'
     return bolly
 
